@@ -7,13 +7,18 @@ COMPANY_NAME = "Tesla Inc"
 STOCK_ENDPOINT = "https://www.alphavantage.co/query"
 NEWS_ENDPOINT = "https://newsapi.org/v2/everything"
 
-params = {
+stock_params = {
     "function": "TIME_SERIES_DAILY_ADJUSTED",
     "symbol": STOCK,
     "apikey": config.stock_api_key
 }
-response = requests.get(url=STOCK_ENDPOINT, params=params)
-stock_data = response.json()["Time Series (Daily)"]
+news_params = {
+    "q": COMPANY_NAME,
+    "apiKey": config.news_api_key
+}
+
+stock_response = requests.get(url=STOCK_ENDPOINT, params=stock_params)
+stock_data = stock_response.json()["Time Series (Daily)"]
 latest_two_days = list(stock_data.items())[:2]
 latest_adjusted_close_data = float(latest_two_days[0][1]["5. adjusted close"])
 the_day_before_latest_adjusted_close_data = float(latest_two_days[1][1]["5. adjusted close"])
@@ -21,11 +26,9 @@ absolute_diff = round(abs(latest_adjusted_close_data - the_day_before_latest_adj
 diff_rate = round((absolute_diff / latest_adjusted_close_data), 2)
 
 if diff_rate >= 0.05:
-    print("Get News")
-
-# STEP 2: Use https://newsapi.org/docs/endpoints/everything
-# Instead of printing ("Get News"), actually fetch the first 3 articles for the COMPANY_NAME. 
-# HINT 1: Think about using the Python Slice Operator
+    news_response = requests.get(url=NEWS_ENDPOINT, params=news_params)
+    news_data = news_response.json()["articles"][:3]
+    print(news_data)
 
 
 # STEP 3: Use twilio.com/docs/sms/quickstart/python
